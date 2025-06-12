@@ -1,78 +1,99 @@
-
 import 'dart:async';
 
-import 'package:finalproject/screens/main_screen.dart';
-import 'package:finalproject/screens/on_boarding_screen.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:get_storage/get_storage.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:provider/provider.dart';
+import 'package:zedeverything_vendor/provider/product_provider.dart';
+import 'package:zedeverything_vendor/provider/vendor_provider.dart';
+import 'package:zedeverything_vendor/screens/add_product_screen.dart';
+import 'package:zedeverything_vendor/screens/home_screen.dart';
+import 'package:zedeverything_vendor/screens/login_screen.dart';
+import 'package:zedeverything_vendor/screens/product_screen.dart';
 
-void main() async{
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  await GetStorage.init();
-  runApp(const MyApp());
-}
+  Provider.debugCheckInvalidValueType = null;
+  runApp(
+      MultiProvider(
+        providers: [
+          Provider<VendorProvider>(create: (_) => VendorProvider()),
+          Provider<ProductProvider>(create: (_) => ProductProvider()),
+        ],
+        child: MyApp(),
+      ),
+  );
 
+
+}
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-          primarySwatch: Colors.blue,
-          fontFamily: 'Lato'
+        colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue.shade400,),
       ),
-      initialRoute: SplashScreen.id,
+      home: const SplashScreen(),
+      builder: EasyLoading.init(),
       routes: {
-        SplashScreen.id:(context)=>const SplashScreen(),
-        OnBoardingScreen.id : (context)=>const OnBoardingScreen(),
-        MainScreen.id : (context)=>const MainScreen(),
+        HomeScreen.id: (context)=>HomeScreen(),
+        ProductScreen.id: (context)=>ProductScreen(),
+        AddProductScreen.id: (context)=>AddProductScreen(),
+        LoginScreen.id: (context)=>LoginScreen()
+
       },
     );
   }
 }
 
-
-
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
-  static const String id ='splash-screen';
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  final store = GetStorage();
 
   @override
-  void initState(){
-    Timer(const Duration(
-        seconds: 3 //first 3 seconds will show app logo and will move to on board screen
-    ),(){
-      bool? boarding= store.read('onBoarding');
-      boarding == null ?Navigator.pushReplacementNamed(context, OnBoardingScreen.id) :
-      boarding == true ? Navigator.pushReplacementNamed(context, MainScreen.id) :
-      Navigator.pushReplacementNamed(context, OnBoardingScreen.id);
-    },);
+  void initState() {
+    Timer(Duration(seconds: 3),(){
+      Navigator.pushReplacement (
+        context,
+        MaterialPageRoute (
+          builder: (BuildContext context) => const LoginScreen(),
+        ),
+      );
+    });
     super.initState();
   }
+
   @override
   Widget build(BuildContext context) {
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge,overlays: []);
     return Scaffold(
-      backgroundColor: Colors.white,
       body: Center(
-        child: Image.asset("assets/images/logo 2.png"),
-      ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: const [
+            Text('ZEDEVERYTHING',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 30, fontWeight: FontWeight.w500,
+              letterSpacing: -1,
+              ),
+            ),
+            Text('Vendor', style: TextStyle(fontSize: 20, ),)
+          ],
+        ),
+      )
     );
   }
 }
+
 
 
 
